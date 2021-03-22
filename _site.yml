@@ -2,6 +2,6 @@ name: "HSRJC"
 navbar:
   title: "HSRJC"
   left:
-    - text: "Home"
+    - text: "Session I"
       href: index.html
 

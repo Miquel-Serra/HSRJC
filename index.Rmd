@@ -33,9 +33,7 @@ $$y_{i,j} = \beta_j x_{i,j} + (age)_i + (sex)_i + (complexity)_i + (intensity)_i
 library(tidyverse)
 library(ggpubr)
 
-
 # Load the data
-# Reminder change path to uploaded data in github
 data <- read.csv("https://raw.githubusercontent.com/Miquel-Serra/HSRdata/main/data_session_1.csv")
 
 # Inspect data
