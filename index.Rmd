@@ -36,7 +36,7 @@ library(ggpubr)
 
 # Load the data
 # Reminder change path to uploaded data in github
-data <- read.csv("C:\\Users\\Miquel\\Dropbox\\HSRclub\\Session 1\\Session 1\\data_session_1.csv")
+data <- read.csv("https://github.com/Miquel-Serra/HSRdata/blob/main/data_session_1.csv")
 
 # Inspect data
 str(data)
