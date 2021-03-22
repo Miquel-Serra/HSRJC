@@ -1,0 +1,125 @@
+---
+title: "Health Services Research Journal Club"
+---
+
+### 20/04/2021: Risk-adjustment with claims data
+
+#### Paper of the day (Wennberg 2013)
+Observational intensity bias associated with illness adjustment: cross sectional analysis of insurance claims
+BMJ 2013; 346 doi: https://doi.org/10.1136/bmj.f549 (Published 21 February 2013)
+
+#### Example of the day:
+Oncology: NSLCC stage 4 patients mortality. (simulated data)
+
+a) what are the crude differences in mortality accross regions?
+$$y_{i,j} = \beta_j x_{i,j} + \epsilon_{i,j}$$
+
+where $y$ is the outcome of interest of patient $i$ and region $j$ and $\beta$ is the region-specific coefficient, $x$ is a matrix of dummies and $\epsilon$ is the residual.
+
+b) what are the crude differences in mortality accross regions after controlling for age and sex of the patients?
+$$y_{i,j} = \beta_j x_{i,j} + (age)_i + (sex)_i + \epsilon_{i,j}$$
+
+c) what are the crude differences in mortality accross regions after controlling for age, sex, complexity and intensity of visits of the patients?
+$$y_{i,j} = \beta_j x_{i,j} + (age)_i + (sex)_i + (complexity)_i + (intensity)_i + \epsilon_{i,j}$$
+
+
+```{r message=FALSE}
+# Load the needed libraries
+library(tidyverse)
+library(ggpubr)
+
+
+# Load the data
+# Reminder change path to uploaded data in github
+data <- read.csv("C:\\Users\\Miquel\\Dropbox\\HSRclub\\Session 1\\Session 1\\data_session_1.csv")
+
+# Inspect data
+str(data)
+
+# Histogram
+data %>% 
+  group_by(region) %>% 
+  summarise(mortality = mean(death)) %>%
+  ggplot(aes(x=mortality*100)) + 
+  geom_histogram(bins=50,fill="white",color="gray7")+
+  theme_pubclean() + 
+  xlab("Crude mortality rate (%)")
+
+# Reduce units with few observations & palliative centers
+exclud <- data %>% group_by(region) %>% summarise(n=n(),m=mean(death,na.rm=T)) %>% subset(n>30&m<.6&m>0)
+data <- subset(data, region %in% exclud$region)
+
+# Raw unadjusted
+fit_un <- lm(death ~ factor(region),data)
+f1<-data.frame(summary(fit_un)$coefficients)[2:dim(data.frame(summary(fit_un)$coefficients))[1],]
+f1$region <- rownames(f1)
+f1$region <- extract_numeric(f1$region)
+f1<-f1[order(f1$Estimate),]
+f1$x <- 1:dim(f1)[1]
+
+f1 %>% ggplot(aes(x=x,y=Estimate*100)) +
+  geom_point()+
+  geom_errorbar(width=.01,aes(ymin=(Estimate-1.96*Std..Error)*100,ymax=(Estimate+1.96*Std..Error)*100)) +
+  theme_pubclean()+
+  ylab("Estimate mortality (%)") +
+  coord_cartesian(ylim = c(-30,30))
+
+# Adjusting for age and sex
+fit_a1 <- lm(death ~ factor(region)+(age)+factor(sex),data)
+f2<-data.frame(summary(fit_a1)$coefficients)[2:(dim(f1)[1]+1),]
+f2$region <- rownames(f2)
+f2$region <- extract_numeric(f2$region)
+f2<-f2[ order(match(f2$region, f1$region)), ]
+f2$x <- 1:dim(f2)[1]
+
+# Adjusting for age and sex + additionals
+fit_a2 <- lm(death ~ factor(region)+(age)+factor(sex)+scale(complex)+factor(intensity),data)
+f3<-data.frame(summary(fit_a2)$coefficients)[2:(dim(f1)[1]+1),]
+f3$region <- rownames(f3)
+f3$region <- extract_numeric(f3$region)
+f3<-f3[ order(match(f3$region, f1$region)), ]
+f3$x <- 1:dim(f3)[1]
+
+# Combining models
+f1$model <- "a) unadjusted"
+f2$model <- "b) age-sex adjusted"
+f3$model <- "c) fully adjusted"
+
+fits <- rbind(f1,f2,f3)
+fits$region <- extract_numeric(fits$region)
+
+pd <- position_dodge(0.5)
+fits %>% ggplot(aes(x=x,y=Estimate*100,color=model)) +
+  geom_point(position = pd)+
+  ylab("Estimate mortality (%)")+
+  theme_pubclean() +
+  scale_color_viridis_d() +
+  coord_cartesian(ylim = c(-30,30))
+
+fits %>% ggplot(aes(x=x,y=Estimate*100,color=model)) +
+  geom_errorbar(width=.001,position = pd,aes(ymin=(Estimate-1.96*Std..Error)*100,ymax=(Estimate+1.96*Std..Error)*100)) +
+  geom_point(position = pd)+
+  ylab("Estimate mortality (%)")+
+  theme_pubclean() +
+  scale_color_viridis_d() +
+  coord_cartesian(ylim = c(-30,30))
+
+rownames(fits) <- NULL
+subset(fits,x%in%c(1))
+subset(fits,x%in%c(53))
+
+
+# R2
+summary(fit_un)$r.squared
+summary(fit_a1)$r.squared
+summary(fit_a2)$r.squared
+
+#  Fully Adjusted re-rank
+
+fits %>% ggplot(aes(x=Estimate, fill=model))+
+  geom_histogram(alpha=.3,bins = 40) + 
+  theme_pubclean() +
+  scale_fill_viridis_d() +
+  geom_vline(xintercept = 0,linetype="dashed",alpha=.4)
+
+```
