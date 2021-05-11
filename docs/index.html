@@ -301,13 +301,316 @@ $(document).ready(function () {
 </div>
 
 
+<div id="health-recommendations-and-selection" class="section level3">
+<h3>11/05/2021: Health Recommendations and Selection</h3>
+<div id="paper-of-the-day-oster-2020" class="section level4">
+<h4>Paper of the day (Oster 2020)</h4>
+<p>Health Recommendations and Selection in Health Behaviors. AER: Insights (2020) <a href="https://doi.org/10.1257/aeri.20190355" class="uri">https://doi.org/10.1257/aeri.20190355</a></p>
+</div>
+<div id="example-of-the-day" class="section level4">
+<h4>Example of the day:</h4>
+<p>Pinnaple consumption and cardiovascular fitness. (simulated data)</p>
+<pre class="r"><code># Load the needed libraries
+library(tidyverse)
+library(ggpubr)
+library(tableone)
+
+
+# Load the data
+data &lt;- read.csv(&quot;https://raw.githubusercontent.com/Miquel-Serra/HSRdata/main/dataset2.csv&quot;)
+
+# Inspect data
+str(data)</code></pre>
+<pre><code>## 'data.frame':    7500 obs. of  8 variables:
+##  $ X                     : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ patient_id            : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ year                  : int  2006 2006 2006 2006 2006 2006 2006 2006 2006 2006 ...
+##  $ weekly_sport_score    : num  3.77 5.92 4.57 4.67 5.45 ...
+##  $ weekly_diet_score     : num  3.76 4.65 4.98 4.32 5.43 ...
+##  $ weekly_sleep_score    : num  2.53 2.91 2.07 4.1 3.63 ...
+##  $ pinnaple_consumption  : int  0 0 0 0 0 0 0 0 1 0 ...
+##  $ cardiovascular_fitness: num  6.26 9.58 8.33 11.16 9.62 ...</code></pre>
+<pre class="r"><code># Descriptive Table
+CreateTableOne(vars = c(&quot;weekly_sport_score&quot;,&quot;weekly_diet_score&quot;,&quot;weekly_sleep_score&quot;,&quot;pinnaple_consumption&quot;),strata = &quot;year&quot;,data)</code></pre>
+<pre><code>##                                   Stratified by year
+##                                    2006        2007        2008        p     
+##   n                                2500        2500        2500              
+##   weekly_sport_score (mean (SD))   5.00 (1.00) 4.98 (0.99) 4.98 (0.97)  0.778
+##   weekly_diet_score (mean (SD))    4.96 (1.83) 5.05 (1.78) 5.02 (1.81)  0.211
+##   weekly_sleep_score (mean (SD))   2.99 (1.35) 3.04 (1.34) 2.98 (1.32)  0.242
+##   pinnaple_consumption (mean (SD)) 0.13 (0.33) 0.20 (0.40) 0.13 (0.33) &lt;0.001
+##                                   Stratified by year
+##                                    test
+##   n                                    
+##   weekly_sport_score (mean (SD))       
+##   weekly_diet_score (mean (SD))        
+##   weekly_sleep_score (mean (SD))       
+##   pinnaple_consumption (mean (SD))</code></pre>
+<pre class="r"><code># model 0
+fit0 &lt;- lm(cardiovascular_fitness ~ pinnaple_consumption, data)
+summary(fit0)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cardiovascular_fitness ~ pinnaple_consumption, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -9.2607 -1.5023  0.0269  1.5482  7.7796 
+## 
+## Coefficients:
+##                      Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)           7.98728    0.02817  283.58   &lt;2e-16 ***
+## pinnaple_consumption  2.74549    0.07259   37.82   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.248 on 7498 degrees of freedom
+## Multiple R-squared:  0.1602, Adjusted R-squared:  0.1601 
+## F-statistic:  1430 on 1 and 7498 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># model 1
+fit1 &lt;- lm(cardiovascular_fitness ~ pinnaple_consumption:factor(year), data)
+summary(fit1)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cardiovascular_fitness ~ pinnaple_consumption:factor(year), 
+##     data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -9.2607 -1.5023  0.0318  1.5535  7.7796 
+## 
+## Coefficients:
+##                                       Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                            7.98728    0.02816  283.62   &lt;2e-16 ***
+## pinnaple_consumption:factor(year)2006  2.90283    0.12994   22.34   &lt;2e-16 ***
+## pinnaple_consumption:factor(year)2007  2.59431    0.10488   24.73   &lt;2e-16 ***
+## pinnaple_consumption:factor(year)2008  2.82495    0.12877   21.94   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.248 on 7496 degrees of freedom
+## Multiple R-squared:  0.1607, Adjusted R-squared:  0.1603 
+## F-statistic: 478.3 on 3 and 7496 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># model 2
+fit2 &lt;- lm(cardiovascular_fitness ~ pinnaple_consumption:factor(year) + weekly_sport_score, data)
+summary(fit2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cardiovascular_fitness ~ pinnaple_consumption:factor(year) + 
+##     weekly_sport_score, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -9.1780 -1.4202  0.0238  1.4584  7.5617 
+## 
+## Coefficients:
+##                                       Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                            4.09515    0.13752   29.78   &lt;2e-16 ***
+## weekly_sport_score                     0.81158    0.02813   28.85   &lt;2e-16 ***
+## pinnaple_consumption:factor(year)2006  1.78147    0.12926   13.78   &lt;2e-16 ***
+## pinnaple_consumption:factor(year)2007  1.64877    0.10477   15.74   &lt;2e-16 ***
+## pinnaple_consumption:factor(year)2008  1.74452    0.12779   13.65   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.133 on 7495 degrees of freedom
+## Multiple R-squared:  0.2446, Adjusted R-squared:  0.2442 
+## F-statistic: 606.6 on 4 and 7495 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># model 3
+fit3 &lt;- lm(cardiovascular_fitness ~ pinnaple_consumption:factor(year) + weekly_sport_score + weekly_diet_score, data)
+summary(fit3)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cardiovascular_fitness ~ pinnaple_consumption:factor(year) + 
+##     weekly_sport_score + weekly_diet_score, data = data)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -7.923 -1.349  0.015  1.380  7.501 
+## 
+## Coefficients:
+##                                       Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                             3.0604     0.1340  22.842  &lt; 2e-16 ***
+## weekly_sport_score                      0.5001     0.0284  17.609  &lt; 2e-16 ***
+## weekly_diet_score                       0.5604     0.0183  30.627  &lt; 2e-16 ***
+## pinnaple_consumption:factor(year)2006   0.2023     0.1323   1.528  0.12646    
+## pinnaple_consumption:factor(year)2007   0.3190     0.1079   2.957  0.00312 ** 
+## pinnaple_consumption:factor(year)2008   0.1719     0.1310   1.313  0.18925    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.011 on 7494 degrees of freedom
+## Multiple R-squared:  0.3286, Adjusted R-squared:  0.3282 
+## F-statistic: 733.6 on 5 and 7494 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># model 4
+fit4 &lt;- lm(cardiovascular_fitness ~ pinnaple_consumption:factor(year) + weekly_sport_score + weekly_diet_score + weekly_sleep_score, data)
+summary(fit4)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cardiovascular_fitness ~ pinnaple_consumption:factor(year) + 
+##     weekly_sport_score + weekly_diet_score + weekly_sleep_score, 
+##     data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -7.9491 -1.3461  0.0095  1.3467  7.0509 
+## 
+## Coefficients:
+##                                       Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                            2.85311    0.13417  21.265   &lt;2e-16 ***
+## weekly_sport_score                     0.51480    0.02820  18.255   &lt;2e-16 ***
+## weekly_diet_score                      0.39648    0.02332  17.005   &lt;2e-16 ***
+## weekly_sleep_score                     0.33207    0.02966  11.198   &lt;2e-16 ***
+## pinnaple_consumption:factor(year)2006 -0.10515    0.13408  -0.784    0.433    
+## pinnaple_consumption:factor(year)2007  0.06295    0.10943   0.575    0.565    
+## pinnaple_consumption:factor(year)2008 -0.09824    0.13211  -0.744    0.457    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.994 on 7493 degrees of freedom
+## Multiple R-squared:  0.3397, Adjusted R-squared:  0.3391 
+## F-statistic: 642.4 on 6 and 7493 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># Coefficient plots
+f1 &lt;- data.frame(summary(fit1)$coefficients[2:4,])
+f2 &lt;- data.frame(summary(fit2)$coefficients[3:5,])
+f3 &lt;- data.frame(summary(fit3)$coefficients[4:6,])
+f4 &lt;- data.frame(summary(fit4)$coefficients[5:7,])
+f1$model &lt;- &quot;basic&quot;
+f2$model &lt;- &quot;Control 1&quot;
+f3$model &lt;- &quot;Control 2&quot;
+f4$model &lt;- &quot;Control 3&quot;
+fits &lt;- rbind(f1,f2,f3,f4)
+fits$x &lt;- rep(c(2006,2007,2008),4)
+fits %&gt;% ggplot(aes(x=x,y=Estimate,color=model)) + 
+  geom_point() +
+  theme_pubclean() +
+  scale_color_viridis_d() +
+  geom_errorbar(aes(ymin=Estimate-1.96*Std..Error,ymax=Estimate+1.96*Std..Error),width=.1)</code></pre>
+<p><img src="data:image/png;base64,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" width="672" /></p>
+<pre class="r"><code>## Bias
+summary(lm(weekly_sport_score ~ pinnaple_consumption, data))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = weekly_sport_score ~ pinnaple_consumption, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.7175 -0.5836  0.0082  0.5841  3.9062 
+## 
+## Coefficients:
+##                      Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)           4.79572    0.01098  436.78   &lt;2e-16 ***
+## pinnaple_consumption  1.27241    0.02830   44.96   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.8764 on 7498 degrees of freedom
+## Multiple R-squared:  0.2124, Adjusted R-squared:  0.2123 
+## F-statistic:  2022 on 1 and 7498 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(lm(weekly_diet_score ~ pinnaple_consumption, data))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = weekly_diet_score ~ pinnaple_consumption, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.3913 -0.9580  0.0097  0.9781  5.3094 
+## 
+## Coefficients:
+##                      Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)           4.51167    0.01708  264.17   &lt;2e-16 ***
+## pinnaple_consumption  3.32666    0.04402   75.57   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.363 on 7498 degrees of freedom
+## Multiple R-squared:  0.4324, Adjusted R-squared:  0.4323 
+## F-statistic:  5711 on 1 and 7498 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(lm(weekly_sleep_score ~ pinnaple_consumption, data))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = weekly_sleep_score ~ pinnaple_consumption, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.2268 -0.7498 -0.0556  0.6865  4.7200 
+## 
+## Coefficients:
+##                      Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)           2.63954    0.01278   206.5   &lt;2e-16 ***
+## pinnaple_consumption  2.41205    0.03295    73.2   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.02 on 7498 degrees of freedom
+## Multiple R-squared:  0.4168, Adjusted R-squared:  0.4167 
+## F-statistic:  5359 on 1 and 7498 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(lm(cardiovascular_fitness ~ weekly_sport_score, data))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cardiovascular_fitness ~ weekly_sport_score, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -8.5524 -1.4928  0.0024  1.5100  8.2552 
+## 
+## Coefficients:
+##                    Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)         2.92292    0.13083   22.34   &lt;2e-16 ***
+## weekly_sport_score  1.09833    0.02573   42.68   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.2 on 7498 degrees of freedom
+## Multiple R-squared:  0.1955, Adjusted R-squared:  0.1953 
+## F-statistic:  1822 on 1 and 7498 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(lm(cardiovascular_fitness ~ weekly_diet_score, data))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cardiovascular_fitness ~ weekly_diet_score, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -7.4579 -1.3832  0.0172  1.4021  7.5463 
+## 
+## Coefficients:
+##                   Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)        4.69233    0.06992   67.11   &lt;2e-16 ***
+## weekly_diet_score  0.73981    0.01312   56.38   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.056 on 7498 degrees of freedom
+## Multiple R-squared:  0.2977, Adjusted R-squared:  0.2976 
+## F-statistic:  3179 on 1 and 7498 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(lm(cardiovascular_fitness ~ weekly_sleep_score, data))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cardiovascular_fitness ~ weekly_sleep_score, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -7.5220 -1.4308  0.0174  1.4382  8.5216 
+## 
+## Coefficients:
+##                    Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)         5.64279    0.06034   93.52   &lt;2e-16 ***
+## weekly_sleep_score  0.91845    0.01836   50.03   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.124 on 7498 degrees of freedom
+## Multiple R-squared:  0.2502, Adjusted R-squared:  0.2501 
+## F-statistic:  2503 on 1 and 7498 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
 <div id="risk-adjustment-with-claims-data" class="section level3">
 <h3>20/04/2021: Risk-adjustment with claims data</h3>
 <div id="paper-of-the-day-wennberg-2013" class="section level4">
 <h4>Paper of the day (Wennberg 2013)</h4>
 <p>Observational intensity bias associated with illness adjustment: cross sectional analysis of insurance claims BMJ 2013; 346 doi: <a href="https://doi.org/10.1136/bmj.f549" class="uri">https://doi.org/10.1136/bmj.f549</a> (Published 21 February 2013)</p>
 </div>
-<div id="example-of-the-day" class="section level4">
+<div id="example-of-the-day-1" class="section level4">
 <h4>Example of the day:</h4>
 <p>Oncology: NSLCC stage 4 patients mortality. (simulated data)</p>
 <ol style="list-style-type: lower-alpha">

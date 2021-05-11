@@ -6,6 +6,78 @@ knit: (function(input_file, encoding) {
  encoding=encoding,
  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
+### 11/05/2021: Health Recommendations and Selection
+
+#### Paper of the day (Oster 2020)
+Health Recommendations and Selection in Health Behaviors. AER: Insights (2020) https://doi.org/10.1257/aeri.20190355
+
+#### Example of the day:
+Pinnaple consumption and cardiovascular fitness. (simulated data)
+
+```{r message=FALSE}
+# Load the needed libraries
+library(tidyverse)
+library(ggpubr)
+library(tableone)
+
+
+# Load the data
+data <- read.csv("https://raw.githubusercontent.com/Miquel-Serra/HSRdata/main/dataset2.csv")
+
+# Inspect data
+str(data)
+
+# Descriptive Table
+CreateTableOne(vars = c("weekly_sport_score","weekly_diet_score","weekly_sleep_score","pinnaple_consumption"),strata = "year",data)
+
+# model 0
+fit0 <- lm(cardiovascular_fitness ~ pinnaple_consumption, data)
+summary(fit0)
+
+# model 1
+fit1 <- lm(cardiovascular_fitness ~ pinnaple_consumption:factor(year), data)
+summary(fit1)
+
+# model 2
+fit2 <- lm(cardiovascular_fitness ~ pinnaple_consumption:factor(year) + weekly_sport_score, data)
+summary(fit2)
+
+# model 3
+fit3 <- lm(cardiovascular_fitness ~ pinnaple_consumption:factor(year) + weekly_sport_score + weekly_diet_score, data)
+summary(fit3)
+
+# model 4
+fit4 <- lm(cardiovascular_fitness ~ pinnaple_consumption:factor(year) + weekly_sport_score + weekly_diet_score + weekly_sleep_score, data)
+summary(fit4)
+
+# Coefficient plots
+f1 <- data.frame(summary(fit1)$coefficients[2:4,])
+f2 <- data.frame(summary(fit2)$coefficients[3:5,])
+f3 <- data.frame(summary(fit3)$coefficients[4:6,])
+f4 <- data.frame(summary(fit4)$coefficients[5:7,])
+f1$model <- "basic"
+f2$model <- "Control 1"
+f3$model <- "Control 2"
+f4$model <- "Control 3"
+fits <- rbind(f1,f2,f3,f4)
+fits$x <- rep(c(2006,2007,2008),4)
+fits %>% ggplot(aes(x=x,y=Estimate,color=model)) + 
+  geom_point() +
+  theme_pubclean() +
+  scale_color_viridis_d() +
+  geom_errorbar(aes(ymin=Estimate-1.96*Std..Error,ymax=Estimate+1.96*Std..Error),width=.1)
+
+## Bias
+summary(lm(weekly_sport_score ~ pinnaple_consumption, data))
+summary(lm(weekly_diet_score ~ pinnaple_consumption, data))
+summary(lm(weekly_sleep_score ~ pinnaple_consumption, data))
+summary(lm(cardiovascular_fitness ~ weekly_sport_score, data))
+summary(lm(cardiovascular_fitness ~ weekly_diet_score, data))
+summary(lm(cardiovascular_fitness ~ weekly_sleep_score, data))
+
+
+```
+
 
 ### 20/04/2021: Risk-adjustment with claims data
 
